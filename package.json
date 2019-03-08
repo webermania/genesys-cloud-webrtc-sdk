@@ -71,6 +71,7 @@
     "superagent": "^3.8.3",
     "uuid": "^3.3.2",
     "webpack-auto-inject-version": "^1.2.2",
+    "purecloud-streaming-client": "^8.2.0",
     "webrtc-stats-gatherer": "^6.0.4",
     "wildemitter": "^1.2.0"
   },

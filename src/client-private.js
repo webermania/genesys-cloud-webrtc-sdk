@@ -4,17 +4,13 @@
 
 const request = require('superagent');
 const StatsGatherer = require('webrtc-stats-gatherer');
+const StreamingClient = require('purecloud-streaming-client');
 
 const PC_AUDIO_EL_CLASS = '__pc-webrtc-inbound';
 
 function buildUri (path, version = 'v2') {
   path = path.replace(/^\/+|\/+$/g, ''); // trim leading/trailing /
   return `https://api.${this._environment}/api/${version}/${path}`;
-}
-
-function buildAssetUri (path) {
-  path = path.replace(/^\/+|\/+$/g, ''); // trim leading/trailing /
-  return `https://apps.${this._environment}/${path}`;
 }
 
 function requestApi (path, { method, data, version, contentType } = {}) {
@@ -34,53 +30,33 @@ function rejectErr (message, details) {
 
 function setupStreamingClient () {
   const connectionOptions = {
-    carrierPigeon: false,
-    fetchGroupsOnConnect: false,
-    fetchRosterOnConnect: false,
-    focusV2: true,
-    roomsV2: true,
-    signalIceConnected: true,
-    jidResource: 'purecloud-webrtc-sdk',
-    rtcSessionSurvivability: true,
-    authKey: this._accessToken,
-    jid: this._personDetails.chat.jabberId,
+    authToken: this._accessToken,
+    iceServers: this._iceServers,
     iceTransportPolicy: this._iceTransportPolicy,
-    host: `https://realtime.${this._environment}`
+    host: `wss://streaming.${this._environment}`
   };
 
   this._log('debug', 'Streaming client WebSocket connection options', connectionOptions);
   this._hasConnected = false;
 
   return new Promise((resolve) => {
-    const staticAssetUri = buildAssetUri.call(this, '/static-realtime-js/realtime.js');
-    const realtimeScript = document.createElement('script');
-    realtimeScript.type = 'text/javascript';
-    realtimeScript.async = true;
-    realtimeScript.src = staticAssetUri;
-    realtimeScript.onerror = (error) => {
-      rejectErr.call(this, 'Failed to load PureCloud streaming client script', error);
-    };
-    realtimeScript.addEventListener('load', () => {
-      const connection = new window.Realtime(connectionOptions);
+    const connection = new StreamingClient(connectionOptions);
 
-      this._streamingConnection = connection;
-      connection.on('connect', () => {
-        this.emit('connected', { reconnect: this._hasConnected });
-        this._log('info', 'PureCloud streaming client connected', { reconnect: this._hasConnected });
-        this._hasConnected = true;
-      });
-      connection.on('rtcIceServers', () => {
-        this._log('info', 'PureCloud streaming client ready for WebRTC calls');
-        resolve();
-      });
-
-      // refresh turn servers every 6 hours
-      this._refreshTurnServersInterval = setInterval(this._refreshTurnServers.bind(this), 6 * 60 * 60 * 1000);
-      connection.connect();
+    this._streamingConnection = connection;
+    connection.on('connected', () => {
+      this.emit('connected', { reconnect: this._hasConnected });
+      this._log('info', 'PureCloud streaming client connected', { reconnect: this._hasConnected });
+      this._hasConnected = true;
     });
 
-    const head = document.head;
-    head.appendChild(realtimeScript);
+    connection.on(this._iceServers ? 'connected' : 'rtcIceServers', () => {
+      this._log('info', 'PureCloud streaming client ready for WebRTC calls');
+      resolve();
+    });
+
+    // refresh turn servers every 6 hours
+    this._refreshTurnServersInterval = setInterval(this._refreshTurnServers.bind(this), 6 * 60 * 60 * 1000);
+    connection.connect();
   });
 }
 
@@ -211,7 +187,7 @@ function proxyStreamingClientEvents () {
 
   // other events
   on('error', this.emit.bind(this, 'error'));
-  on('disconnect', () => this.emit('disconnected', 'Streaming API connection disconnected'));
+  on('disconnected', () => this.emit('disconnected', 'Streaming API connection disconnected'));
   on('rtcIceServers', replaceIceServers.bind(this));
 }
 
