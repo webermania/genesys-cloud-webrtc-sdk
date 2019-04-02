@@ -1,5 +1,27 @@
 const controller = require('./app-controller');
 
+window.pwt = new window.PurecloudWebTelemetry({
+  xhr: {
+    apdexT: 500,
+    apdexAlert: 0.8
+  },
+  websockets: {
+    apdexT: 5 * 60 * 1000,
+    apdexAlert: 0.75
+  },
+  webrtc: {
+    statsInterval: 1000,
+    apdex: {
+      mediaStart: {
+        apdexT: 500,
+        apdexAlert: 0.8
+      }
+    }
+  }
+});
+
+window.pwt.wrap();
+
 function initApp () {
   const envInput = document.getElementById('environment').value;
   const environmentInfo = window.environments[envInput];
