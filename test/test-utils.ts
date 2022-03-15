@@ -43,7 +43,9 @@ export class SimpleMockSdk extends EventEmitter {
     log: jest.fn(),
     info: jest.fn(),
     warn: jest.fn(),
-    error: jest.fn()
+    error: jest.fn(),
+    startServerLogging: jest.fn(),
+    stopServerLogging: jest.fn()
   };
   _streamingConnection = {
     config: {

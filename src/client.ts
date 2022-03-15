@@ -2,6 +2,7 @@ import { EventEmitter } from 'events';
 import StrictEventEmitter from 'strict-event-emitter-types';
 import StreamingClient, { HttpClient } from 'genesys-cloud-streaming-client';
 import Logger from 'genesys-cloud-client-logger';
+import { Constants } from 'stanza';
 
 import {
   ISdkConfig,
@@ -35,7 +36,6 @@ import { setupLogging } from './logging';
 import { SdkErrorTypes, SessionTypes } from './types/enums';
 import { SessionManager } from './sessions/session-manager';
 import { SdkMedia } from './media/media';
-import { Constants } from 'stanza';
 
 const ENVIRONMENTS = [
   'mypurecloud.com',
@@ -679,6 +679,7 @@ export class GenesysCloudWebrtcSdk extends (EventEmitter as { new(): StrictEvent
    */
   disconnect (): Promise<any> {
     this._http.stopAllRetries();
+    this.stopServerLogging();
     return this._streamingConnection.disconnect();
   }
 
@@ -688,7 +689,18 @@ export class GenesysCloudWebrtcSdk extends (EventEmitter as { new(): StrictEvent
    */
   reconnect (): Promise<any> {
     this._http.stopAllRetries();
+    this.logger.startServerLogging();
     return this._streamingConnection.reconnect();
+  }
+
+  stopServerLogging () {
+    /* send all logs and swallow any errors */
+    this.logger.sendAllLogsInstantly().map(p => p.catch());
+    this.logger.stopServerLogging();
+  }
+
+  startServerLogging () {
+    this.logger.startServerLogging();
   }
 
   /**

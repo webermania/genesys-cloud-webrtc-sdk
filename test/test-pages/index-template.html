@@ -6,12 +6,12 @@
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
     integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
   <script src="https://sdk-cdn.mypurecloud.com/javascript/28.0.0/purecloud-platform-client-v2.min.js"></script>
-  <script src="https://apps.inindca.com/genesys-cloud-client-logger/genesys-cloud-client-logger.min.js"></script>
+  <script src="https://apps.inindca.com/genesys-cloud-client-logger/v4/genesys-cloud-client-logger.min.js"></script>
   <script>
     if (window.location.href.indexOf('/cdn') > -1) {
       const script = document.createElement('script');
       // for local development
-      // script.src = '../../dist/genesys-cloud-webrtc-sdk.js';
+      // script.src = '../../../dist/genesys-cloud-webrtc-sdk.js';
       script.src = 'https://sdk-cdn.mypurecloud.com/webrtc-sdk/v7/genesys-cloud-webrtc-sdk.js';
       document.head.prepend(script);
     }

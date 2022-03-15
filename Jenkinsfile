@@ -26,7 +26,7 @@ def getBuildType = {
 def testSpigotByEnv = { environment, version ->
    stage("Spigot test '${environment}'") {
         script {
-            println("Scheduling spigot test for: { env: '${environment}', branch: '${version}'")
+            println("Scheduling spigot test for: { env: '${environment}', branch: '${version}' }")
             build(job: 'spigot-tests-webrtcsdk-entry',
                     parameters: [
                         string(name: 'ENVIRONMENT', value: environment),
